@@ -71,9 +71,15 @@ const owmUrl = process.env.OWM_ENDPOINT.sprintf(process.env.ZIP_CODE, process.en
 webClient.get({url: owmUrl}, (error, response, body) => {
   const resJson = JSON.parse(body)
   const icon = process.env.OWM_IMAGE_BASE.sprintf(resJson.weather[0].icon)
-  const weatherJp = weathers[resJson.weather[0].id]
-  const areaName = resJson.name.toHiragana()
-  const message = process.env.MESSAGE_BASE.sprintf(areaName, weatherJp, resJson.main.temp_max, resJson.main.temp_min, icon)
+  let message
+  if (process.env.LANG === 'ja') {
+    const weatherJp = weathers[resJson.weather[0].id]
+    const areaName = resJson.name.toHiragana()
+    message = process.env.MESSAGE_BASE.sprintf(areaName, weatherJp, resJson.main.temp_max, resJson.main.temp_min, icon)
+  } else {
+    message = process.env.MESSAGE_BASE.sprintf(resJson.name, resJson.weather[0].description, resJson.main.temp_max, resJson.main.temp_min, icon)
+  }
+
   // HangoutsChatに投稿する
   webClient.post({
     url: process.env.HC_ENDPOINT,
